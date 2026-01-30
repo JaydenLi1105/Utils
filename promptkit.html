@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leonardo AI Prompt Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    background:#0f1115;
+    color:#eaeaf0;
+    margin:0;
+    padding:0;
+}
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:24px;
+}
+h1{
+    font-size:22px;
+    margin-bottom:16px;
+}
+.section{
+    background:#161a22;
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:16px;
+}
+.section h2{
+    font-size:16px;
+    margin-bottom:12px;
+    color:#9fb6ff;
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:12px;
+}
+label{
+    font-size:12px;
+    color:#aaa;
+}
+input, select, textarea{
+    width:100%;
+    background:#0f1115;
+    border:1px solid #2a2f3a;
+    border-radius:8px;
+    padding:8px;
+    color:#fff;
+    font-size:13px;
+}
+textarea{
+    min-height:80px;
+    resize:vertical;
+}
+button{
+    background:#4f6bff;
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:12px 18px;
+    cursor:pointer;
+    font-size:14px;
+}
+button:hover{background:#6b82ff;}
+.output{
+    background:#0b0e14;
+    border:1px solid #2a2f3a;
+    border-radius:10px;
+    padding:12px;
+    white-space:pre-wrap;
+    font-size:13px;
+    min-height:120px;
+}
+.copy-btn{
+    margin-top:8px;
+    background:#2a2f3a;
+}
+.copy-btn:hover{background:#3a3f4a;}
+.footer{
+    opacity:0.5;
+    font-size:11px;
+    margin-top:16px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>Leonardo.AI Prompt Generator（职业模板版）</h1>
+
+<div class="section">
+<h2>模板类型</h2>
+<select id="template">
+    <option value="product">产品 / 原型图 Product</option>
+    <option value="character">角色设计 Character</option>
+    <option value="scene">场景设计 Scene</option>
+    <option value="brand">品牌视觉 Brand</option>
+</select>
+</div>
+
+<div class="section" id="formArea"></div>
+
+<div class="section">
+<h2>生成结果 Prompt</h2>
+<div class="output" id="output"></div>
+<button class="copy-btn" onclick="copyPrompt()">复制 Prompt</button>
+</div>
+
+<div class="section">
+<h2>Negative Prompt（Leonardo 专用）</h2>
+<textarea id="negative">
+low quality, lowres, blurry, distorted, deformed, bad anatomy, watermark, logo, text, jpeg artifacts
+</textarea>
+<button class="copy-btn" onclick="copyNegative()">复制 Negative Prompt</button>
+<a href="https://app.leonardo.ai/?_gl=1*1x0fdd0*_ga*MjAyNzQ4NTA5Ny4xNzY5NzUxMTU2*_ga_9SZY51046C*czE3Njk3NTExNTMkbzEkZzAkdDE3Njk3NTExNTMkajYwJGwwJGgxNDA0NTMxNjc0" Style="Background:#cc9">→ www.leonardo.ai/</a>
+</div>
+
+<div class="footer">
+Local Web Tool · No server · No tracking · Professional Workflow Tool
+</div>
+
+</div>
+
+<script>
+const templates = {
+    product: [
+        ["subject","主体 Subject"],
+        ["view","视角 View"],
+        ["materials","材质 Materials"],
+        ["light","光线 Lighting"],
+        ["background","背景 Background"],
+        ["scene","场景说明 Scene"]
+    ],
+    character: [
+        ["role","角色定位 Role"],
+        ["outfit","服装 Outfit"],
+        ["action","动作 Action"],
+        ["mood","情绪 Mood"],
+        ["style","风格 Style"],
+        ["env","环境 Environment"],
+        ["light","光线 Lighting"],
+        ["lens","镜头 Lens"]
+    ],
+    scene: [
+        ["place","地点 Place"],
+        ["time","时间 Time"],
+        ["weather","氛围/天气 Atmosphere"],
+        ["light","光线 Lighting"],
+        ["focus","细节焦点 Focus"],
+        ["style","风格 Style"]
+    ],
+    brand: [
+        ["theme","主题 Theme"],
+        ["palette","配色 Palette"],
+        ["graphic","图形风格 Graphic"],
+        ["layout","布局 Layout"],
+        ["use","用途 Use case"]
+    ]
+};
+
+function renderForm(){
+    const type = document.getElementById("template").value;
+    const area = document.getElementById("formArea");
+    area.innerHTML = `<h2>参数填写</h2><div class="grid" id="grid"></div>`;
+    const grid = document.getElementById("grid");
+
+    templates[type].forEach(f=>{
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <label>${f[1]}</label>
+            <input id="${f[0]}" placeholder="${f[1]}">
+        `;
+        grid.appendChild(div);
+    });
+
+    area.innerHTML += `<button style="margin-top:12px" onclick="generate()">生成 Prompt</button>`;
+}
+
+function generate(){
+    const type = document.getElementById("template").value;
+    let parts = [];
+    templates[type].forEach(f=>{
+        const v = document.getElementById(f[0]).value.trim();
+        if(v) parts.push(v);
+    });
+
+    let prompt = parts.join(", ") + `,
+highly detailed, professional quality`;
+
+    document.getElementById("output").innerText = prompt;
+}
+
+function copyPrompt(){
+    navigator.clipboard.writeText(document.getElementById("output").innerText);
+}
+
+function copyNegative(){
+    navigator.clipboard.writeText(document.getElementById("negative").value);
+}
+
+document.getElementById("template").addEventListener("change",renderForm);
+renderForm();
+</script>
+</body>
+</html>
